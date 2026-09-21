@@ -1,0 +1,21 @@
+package de.webprojekt.service;
+
+import org.springframework.stereotype.Service;
+import de.webprojekt.repository.UserRepository;
+import org.springframework.security.core.userdetails.UserDetailsService;
+
+@Service
+public class CustomUserDetailsService implements UserDetailsService {
+    private final UserRepository userRepository;
+
+    public CustomUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @Override
+    public org.springframework.security.core.userdetails.UserDetails loadUserByUsername(String email) {
+        return userRepository.findByEmail(email)
+                .map(user -> org.springframework.security.core.userdetails.User.withUsername(user.getEmail()).password(user.getPassword()).roles(user.getRole().name()).build())
+                .orElseThrow(() -> new org.springframework.security.core.userdetails.UsernameNotFoundException("Benutzer nicht gefunden"));
+    }
+}
